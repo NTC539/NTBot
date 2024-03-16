@@ -3,11 +3,13 @@ import datetime
 from discord.ext import commands
 
 bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
-@bot.event
-async def on_ready():
-    print(f'{bot.user.name} запустился и готов к работе!')
 
-timetable = [['ОБЖ','Исто','Физ-ра','Биол','Алге','Веро','Обще'],['Алге','Физ-ра','Физи','Обще','Лите','Англ','Геом'],['Русс','Хими','Исто','Русс','Лите','Англ','Индивидуальный проект'],['Обще','Геог','Физи','Геом','Алге','Инфо','Англ'],['Разговоры о важном','Физ-ра','Обще','Русс','Геом','Лите','Алге']]
+
+timetable = [['ОБЖ','Исто','Физ-ра','Биол','Алге','Веро','Обще'],
+             ['Алге','Физ-ра','Физи','Обще','Лите','Англ','Геом'],
+             ['Русс','Хими','Исто','Русс','Лите','Англ','Индивидуальный проект'],
+             ['Обще','Геог','Физи','Геом','Алге','Инфо','Англ'],
+             ['Разговоры о важном','Физ-ра','Обще','Русс','Геом','Лите','Алге']]
 baza = ['Русс','Лите','Алге','Геом','Инфо','Обще','Англ','Биол','Хими','Исто','Физи','Геог','ОБЖ','Веро']
 
 def replace_line(line_num, text, txt):
@@ -17,17 +19,27 @@ def replace_line(line_num, text, txt):
     out.writelines(lines)
     out.close()
 
-async def senddz(txt):
+async def send(txt):
     baza = open(txt, 'r')
     channel = bot.get_channel(1156612750945026089)
     bazafile = baza.read()
     await channel.send(bazafile)
 
-def replace(currentbaza,txt):
+def replace():
+    txt = 'дзназавтра.txt'
     file = open('база.txt', 'r')
     bazalines = file.readlines()
-    today = datetime.date.today()
-    tomorrow = today + datetime.timedelta(days=1)
+    date = datetime.datetime.now()
+    dayweek = date.weekday()
+    if dayweek >= 4:
+        currentbaza = timetable[4]
+        days = 0 - date.weekday()
+        if days <= 0:
+            days += 7
+        tomorrow = date + datetime.timedelta(days)
+    else:
+        currentbaza = timetable[dayweek]
+        tomorrow = date + datetime.timedelta(days=1)
     replace_line(0,f"Задание на {tomorrow.strftime('%d.%m')}:\n",txt)
     for i in range(0, 14):
         if baza[i] in currentbaza:
@@ -40,14 +52,14 @@ def replace(currentbaza,txt):
                     missing = a
                     replace_line(currentbaza.index(missing)+1,f'{(currentbaza.index(missing)+1)}. {missing}\n',txt)
 
-@bot.command()
-async def база(message):
+@bot.event
+async def on_ready():
     channel = bot.get_channel(968476610435088441)
     for thread in channel.threads:
         print(thread.name)
         async for message in thread.history():
             if message.attachments:
-                task=f"{message.content} ((Задание на картинке, переходи в ветку)) (<#{str(thread.id)}>)\n"
+                task = f"{message.content} ((Задание на картинке, переходи в ветку)) (<#{str(thread.id)}>)\n"
             else:
                 task = f'{message.content} (<#{str(thread.id)}>)\n'
             subjname = ''
@@ -60,15 +72,7 @@ async def база(message):
                 for i in range(0,14):
                     if subjname == baza[i]:
                         replace_line(i,task,'база.txt')
-
-    date = datetime.datetime.now()
-    dayweek = date.weekday()
-    if dayweek >=4:
-        replace(timetable[4], 'дзназавтра.txt')
-        await senddz('дзназавтра.txt')
-    else:
-        replace(timetable[dayweek], "дзназавтра.txt")
-        await senddz("дзназавтра.txt")
-
+    replace()
+    await send('дзназавтра.txt')
 
 bot.run('')
