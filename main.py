@@ -7,11 +7,7 @@ bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 async def on_ready():
     print(f'{bot.user.name} запустился и готов к работе!')
 
-monday = ['Разговоры о важном','Физ-ра','Обще','Русс','Геом','Лите','Алге']
-tuesday = ['ОБЖ','Исто','Физ-ра','Биол','Алге','Веро','Обще']
-wednesday = ['Алге','Физра','Физи','Обще','Лите','Англ','Геом']
-thursday = ['Русс','Хими','Исто','Русс','Лите','Англ','Индивидуальный проект']
-friday = ['Обще','Геог','Физи','Геом','Алге','Инфо','Англ']
+timetable = [['ОБЖ','Исто','Физ-ра','Биол','Алге','Веро','Обще'],['Алге','Физ-ра','Физи','Обще','Лите','Англ','Геом'],['Русс','Хими','Исто','Русс','Лите','Англ','Индивидуальный проект'],['Обще','Геог','Физи','Геом','Алге','Инфо','Англ'],['Разговоры о важном','Физ-ра','Обще','Русс','Геом','Лите','Алге']]
 baza = ['Русс','Лите','Алге','Геом','Инфо','Обще','Англ','Биол','Хими','Исто','Физи','Геог','ОБЖ','Веро']
 
 def replace_line(line_num, text, txt):
@@ -27,7 +23,9 @@ async def senddz(txt):
     bazafile = baza.read()
     await channel.send(bazafile)
 
-def replace(currentbaza,txt,bazalines):
+def replace(currentbaza,txt):
+    file = open('база.txt', 'r')
+    bazalines = file.readlines()
     today = datetime.date.today()
     tomorrow = today + datetime.timedelta(days=1)
     replace_line(0,f"Задание на {tomorrow.strftime('%d.%m')}:\n",txt)
@@ -40,8 +38,7 @@ def replace(currentbaza,txt,bazalines):
             for a in currentbaza:
                 if a not in baza:
                     missing = a
-                    replace_line(currentbaza.index(missing)+1,missing,txt)
-
+                    replace_line(currentbaza.index(missing)+1,f'{(currentbaza.index(missing)+1)}. {missing}\n',txt)
 
 @bot.command()
 async def база(message):
@@ -63,26 +60,15 @@ async def база(message):
                 for i in range(0,14):
                     if subjname == baza[i]:
                         replace_line(i,task,'база.txt')
-    file = open('база.txt', 'r')
-    bazalines = file.readlines()
+
     date = datetime.datetime.now()
     dayweek = date.weekday()
-    if dayweek == 0:
-        replace(tuesday, 'дзназавтра.txt', bazalines)
+    if dayweek >=4:
+        replace(timetable[4], 'дзназавтра.txt')
         await senddz('дзназавтра.txt')
-    elif dayweek == 1:
-        replace(wednesday, "дзназавтра.txt", bazalines)
-        await senddz("дзназавтра.txt")
-    elif dayweek == 2:
-        replace(thursday, "дзназавтра.txt", bazalines)
-        await senddz("дзназавтра.txt")
-    elif dayweek == 3:
-        replace(friday, "дзназавтра.txt", bazalines)
-        await senddz("дзназавтра.txt")
     else:
-        replace(monday, 'дзназавтра.txt', bazalines)
-        await senddz('дзназавтра.txt')
+        replace(timetable[dayweek], "дзназавтра.txt")
+        await senddz("дзназавтра.txt")
 
 
 bot.run('')
-
