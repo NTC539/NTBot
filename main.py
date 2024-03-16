@@ -62,4 +62,4 @@ async def history3(ctx):
                     f.write("\n")
     f.close()
 
-bot.run('MTExMTk1NzUwNzAzMjc0ODEyMw.Gr4yB0.kaoiaGBbcWk-hskCKXHswAgLAC2Ap5dFaVBqkM')
+bot.run('')
