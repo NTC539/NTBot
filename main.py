@@ -11,7 +11,6 @@ dayframes = []
 cfg = open(r"C:\NTBot\settings.txt", 'r').readlines()
 methodsettings = []
 def start(): #обновление cfg и основных переменных в соответствии с ним
-
     global timetable1, timetable2, dayframes, allsubjects, cfg, methodsettings
     timetable1 = []
     timetable2 = []
@@ -149,6 +148,7 @@ def settings(): #запуск окна настроек
                     self.entries2.append(entry)
 
     def save(): #перезапись txt файла на основе cfg
+        global windows
         print(cfg)
         cfg[0] = bottoken.entry.get()
         cfg[1] = id1_frame.entry.get()
@@ -167,7 +167,8 @@ def settings(): #запуск окна настроек
         print(cfg)
         out.writelines(cfg)
         out.close()
-        start()
+        for window in windows:
+            window.destroy()
 
     class timetablewindow(): #окно настройки расписания
         def __init__(self):
@@ -236,7 +237,6 @@ def settings(): #запуск окна настроек
                         singlestr2 += ', '
                 cfg[9 + i * 2] = singlestr1
                 cfg[10 + i * 2] = singlestr2
-
             self.closetimetable()
 
     titletext = tk.Label(root, text="НАСТРОЙКИ", font=("Obelix Pro", 30))
