@@ -83,7 +83,7 @@ def settings(): #запуск окна настроек
     global cfg, windows
     root = tk.Tk()
     root.title("НАСТРОЙКИ")
-    root.geometry("316x800")
+    root.geometry("316x700")
     windows.append(root)
     class customframeentry: #поле ввода с подписью
         def __init__(self, label_text, insert, scrollneeded, place):
@@ -162,7 +162,6 @@ def settings(): #запуск окна настроек
         cfg[1] = id1_frame.entry.get()
         cfg[2] = id2_frame.entry.get()
         cfg[3] = basea.entry.get()
-        cfg[4] = baseb.entry.get()
         print(timetableconst.value1)
         cfg[5] = str(timetableconst.value1)
         print(cfg[5])
@@ -253,8 +252,7 @@ def settings(): #запуск окна настроек
     bottoken = customframeentry("Токен бота", cfg[0], False, root)
     id1_frame = customframeentry("ID канала с базой заданий", cfg[1], False, root)
     id2_frame = customframeentry("ID канала для отправки", cfg[2], False, root)
-    basea = customframeentry("Предметы с заданиями (через запятую с пробелами)", cfg[3], True, root)
-    baseb = customframeentry("Предметы без заданий (через запятую с пробелами)", cfg[4], True, root)
+    basea = customframeentry("Список предметов (через запятую с пробелами)", cfg[3], True, root)
     timetableconst = customframecheckbox("Изменение расписания", cfg[5], root)
     countofsubjects = customframeentry('Максимальное количество предметов в день', cfg[6], False, root)
     countofdays = customframeentry("Количество дней недели", cfg[7], False, root)
@@ -304,21 +302,19 @@ def replace_line(line_num, text, txt): #замена строки
 bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 @bot.event
 async def on_ready(): #основной алгоритм для
-    bazalines = cfg[3].split(', ') + cfg[4].split(', ')
-    yesterday = []
+    methodsettings[0].pop()
+    today = []
     for i in range(0, 100):
-        bazalines.append('')
-        yesterday.append('')
+        today.append('')
     channel1id = int(cfg[1])
     channel2id = int(cfg[2])
-    settings = methodsettings
-    print(settings)
     print(methodsettings[1].weekday())
     if methodsettings[1].weekday() == 0:
         print("абоба")
         replace_line(8,str(not(cfg[8]))+"\n",r"C:\NTBot\settings.txt")
-    async def yesterdayprocessing():
-        yesterdaystrings = ''
+    todaytimetable = methodsettings[0]
+    async def todayprocessing():
+        todaystrings = ''
         channel = bot.get_channel(channel1id)
         for thread in channel.threads:
             print(thread.name)
@@ -328,23 +324,18 @@ async def on_ready(): #основной алгоритм для
                 else:
                     task = f'{message.content} (<#{str(thread.id)}>)'
                 print(message.content)
-                for i in range(len(allsubjects)):
-                    subjname = allsubjects[i]
-                    if subjname in message.content:
-                        bazalines[i] = task
-        yesterday[0] = f"Задание на {settings[1].strftime('%d.%m')}:\n"
-        for i in range(len(allsubjects)):
-            if allsubjects[i] in settings[0]:
-                if settings[0].count(allsubjects[i]) > 1:
-                    yesterday[settings[0].index(allsubjects[i], settings[0].index(allsubjects[i]) + 1) + 1] = f'{str(settings[0].index(allsubjects[i]) + 1)}. {bazalines[i]} \n'
-                yesterday[settings[0].index(allsubjects[i]) + 1] = f'{str(settings[0].index(allsubjects[i]) + 1)}. {bazalines[i]} \n'
-                print(yesterday)
+                for i in range(len(methodsettings[0])):
+                    if methodsettings[0][i] in message.content:
+                        todaytimetable[i] = task
+        for i in range(len(todaytimetable)):
+            todaytimetable[i] = f"{i}. {todaytimetable[i]} \n"
+        todaytimetable.insert(0, f"Задание на {methodsettings[1].strftime('%d.%m')}:\n")
         channel = bot.get_channel(channel2id)
-        print(yesterday)
-        for string in yesterday:
-            yesterdaystrings += string
-        await channel.send(yesterdaystrings)
-    await yesterdayprocessing()
+        print(todaytimetable)
+        for string in todaytimetable:
+            todaystrings += string
+        await channel.send(todaystrings)
+    await todayprocessing()
 
 def startbot(): #тупо старт бота
     global windows
