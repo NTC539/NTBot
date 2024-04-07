@@ -37,9 +37,17 @@ def start(): #обновление cfg и основных переменных 
         cfg[5] = True
     elif cfg[5] == "False":
         cfg[5] = False
+    if cfg[8] == "True":
+        cfg[8] = True
+    elif cfg[8] == "False":
+        cfg[8] = False
     print(timetable1)
     print(timetable2)
-
+    if cfg[8]:
+        timetable = timetable1
+    else:
+        timetable = timetable2
+    print(timetable)
     # подбор даты завтрашнего дня, расписания на завтрашний день
     date = datetime.datetime.now()
     dayweek = date.weekday()
@@ -49,10 +57,10 @@ def start(): #обновление cfg и основных переменных 
         if days <= 0:
             days += 7
         tomorrow = date + datetime.timedelta(days)
-        methodsettings = [timetable1[-1], tomorrow]
+        methodsettings = [timetable[-1], tomorrow]
     else:
         tomorrow = date + datetime.timedelta(days=1)
-        methodsettings = [timetable1[dayweek], tomorrow]
+        methodsettings = [timetable[dayweek], tomorrow]
 
 start()
 def mainwindow(): #запуск основного окна
@@ -101,7 +109,7 @@ def settings(): #запуск окна настроек
             frame = tk.Frame(place, borderwidth=1, relief='solid', padx=6, pady=10)
             label = tk.Label(frame, text=label_text)
             label.pack(anchor='nw')
-            checkbutton = tk.Checkbutton(frame, variable=self.value, text='hth',command=self.switch)
+            checkbutton = tk.Checkbutton(frame, variable=self.value, text='Расписание меняется',command=self.switch)
             checkbutton.pack(anchor='nw')
             if value:
                 checkbutton.select()
@@ -160,7 +168,7 @@ def settings(): #запуск окна настроек
         print(cfg[5])
         cfg[6] = countofsubjects.entry.get()
         cfg[7] = countofdays.entry.get()
-        cfg[8] = cfg[8]
+        cfg[8] = str(cfg[8])
         for e in range(len(cfg)):
             cfg[e] = cfg[e] + '\n'
         out = open(r"C:\NTBot\settings.txt", 'w')
@@ -247,7 +255,7 @@ def settings(): #запуск окна настроек
     id2_frame = customframeentry("ID канала для отправки", cfg[2], False, root)
     basea = customframeentry("Предметы с заданиями (через запятую с пробелами)", cfg[3], True, root)
     baseb = customframeentry("Предметы без заданий (через запятую с пробелами)", cfg[4], True, root)
-    timetableconst = customframecheckbox("Расписание меняется?", cfg[5], root)
+    timetableconst = customframecheckbox("Изменение расписания", cfg[5], root)
     countofsubjects = customframeentry('Максимальное количество предметов в день', cfg[6], False, root)
     countofdays = customframeentry("Количество дней недели", cfg[7], False, root)
 
@@ -260,11 +268,6 @@ def settings(): #запуск окна настроек
     label = tk.Label(root)
     label.pack(anchor='nw', padx=6, pady=6)
 
-    def test():
-        print(timetableconst.value1)
-
-    check = tk.Button(root, text="ТЕСТ", command=test)
-    check.pack(anchor='center', padx=6, pady=6)
 def single(): #вывод окна единичной отправки
     global windows
     singlewindow = tk.Tk()
@@ -310,6 +313,10 @@ async def on_ready(): #основной алгоритм для
     channel2id = int(cfg[2])
     settings = methodsettings
     print(settings)
+    print(methodsettings[1].weekday())
+    if methodsettings[1].weekday() == 0:
+        print("абоба")
+        replace_line(8,str(not(cfg[8]))+"\n",r"C:\NTBot\settings.txt")
     async def yesterdayprocessing():
         yesterdaystrings = ''
         channel = bot.get_channel(channel1id)
