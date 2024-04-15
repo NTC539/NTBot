@@ -4,18 +4,19 @@ import discord
 import datetime
 from discord.ext import commands
 
+path = "settings.txt"
 windows = []
 timetable1 = []
 timetable2 = []
 dayframes = []
-cfg = open(r"C:\NTBot\settings.txt", 'r').readlines()
+cfg = open(path, 'r').readlines()
 methodsettings = []
 def start(): #обновление cfg и основных переменных в соответствии с ним
     global timetable1, timetable2, dayframes, allsubjects, cfg, methodsettings
     timetable1 = []
     timetable2 = []
     dayframes = []
-    cfg = open(r"C:\NTBot\settings.txt", 'r').readlines()
+    cfg = open(path, 'r').readlines()
     for i in range(len(cfg)):
         cfg[i] = cfg[i].replace('\n', '')
     for i in range(0, (len(cfg) - 9) // 2):
@@ -27,7 +28,6 @@ def start(): #обновление cfg и основных переменных 
         day2 = cfg[10 + i * 2].split(', ')
         for dayn in day2:
             timetable2[i].append(dayn)
-    print(timetable1)
     timetable1 = timetable1[1:] + [timetable1[0]]
     timetable2 = timetable2[1:] + [timetable2[0]]
     dayframes = []
@@ -41,8 +41,6 @@ def start(): #обновление cfg и основных переменных 
         cfg[8] = True
     elif cfg[8] == "False":
         cfg[8] = False
-    print(timetable1)
-    print(timetable2)
     if cfg[8]:
         timetable = timetable1
     else:
@@ -51,7 +49,6 @@ def start(): #обновление cfg и основных переменных 
     # подбор даты завтрашнего дня, расписания на завтрашний день
     date = datetime.datetime.now()
     dayweek = date.weekday()
-    print(dayweek)
     if dayweek >= int(cfg[7]) - 1:
         days = 0 - date.weekday()
         if days <= 0:
@@ -157,20 +154,17 @@ def settings(): #запуск окна настроек
 
     def save(): #перезапись txt файла на основе cfg
         global windows
-        print(cfg)
         cfg[0] = bottoken.entry.get()
         cfg[1] = id1_frame.entry.get()
         cfg[2] = id2_frame.entry.get()
         cfg[3] = basea.entry.get()
-        print(timetableconst.value1)
         cfg[5] = str(timetableconst.value1)
-        print(cfg[5])
         cfg[6] = countofsubjects.entry.get()
         cfg[7] = countofdays.entry.get()
         cfg[8] = str(cfg[8])
         for e in range(len(cfg)):
             cfg[e] = cfg[e] + '\n'
-        out = open(r"C:\NTBot\settings.txt", 'w')
+        out = open(path, 'w')
         print(cfg)
         out.writelines(cfg)
         out.close()
@@ -302,16 +296,16 @@ def replace_line(line_num, text, txt): #замена строки
 bot = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 @bot.event
 async def on_ready(): #основной алгоритм для
-    methodsettings[0].pop()
+    while "" in methodsettings[0]:
+        methodsettings[0].remove("")
+    print(methodsettings[0])
     today = []
     for i in range(0, 100):
         today.append('')
     channel1id = int(cfg[1])
     channel2id = int(cfg[2])
-    print(methodsettings[1].weekday())
     if methodsettings[1].weekday() == 0:
-        print("абоба")
-        replace_line(8,str(not(cfg[8]))+"\n",r"C:\NTBot\settings.txt")
+        replace_line(8,str(not(cfg[8]))+"\n",path)
     todaytimetable = methodsettings[0]
     async def todayprocessing():
         todaystrings = ''
@@ -328,7 +322,7 @@ async def on_ready(): #основной алгоритм для
                     if methodsettings[0][i] in message.content:
                         todaytimetable[i] = task
         for i in range(len(todaytimetable)):
-            todaytimetable[i] = f"{i}. {todaytimetable[i]} \n"
+            todaytimetable[i] = f"{i+1}. {todaytimetable[i]} \n"
         todaytimetable.insert(0, f"Задание на {methodsettings[1].strftime('%d.%m')}:\n")
         channel = bot.get_channel(channel2id)
         print(todaytimetable)
