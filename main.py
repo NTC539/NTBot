@@ -300,36 +300,38 @@ async def on_ready(): #основной алгоритм для
         methodsettings[0].remove("")
     print(methodsettings[0])
     today = []
-    for i in range(0, 100):
+    for i in range(0,10):
         today.append('')
     channel1id = int(cfg[1])
     channel2id = int(cfg[2])
     if methodsettings[1].weekday() == 0:
         replace_line(8,str(not(cfg[8]))+"\n",path)
-    todaytimetable = methodsettings[0]
-    async def todayprocessing():
-        todaystrings = ''
-        channel = bot.get_channel(channel1id)
-        for thread in channel.threads:
-            print(thread.name)
-            async for message in thread.history():
-                if message.attachments:
-                    task = f"{message.content} ((Задание на картинке, переходи в ветку)) (<#{str(thread.id)}>)"
-                else:
-                    task = f'{message.content} (<#{str(thread.id)}>)'
-                print(message.content)
-                for i in range(len(methodsettings[0])):
-                    if methodsettings[0][i] in message.content:
-                        todaytimetable[i] = task
-        for i in range(len(todaytimetable)):
-            todaytimetable[i] = f"{i+1}. {todaytimetable[i]} \n"
-        todaytimetable.insert(0, f"Задание на {methodsettings[1].strftime('%d.%m')}:\n")
-        channel = bot.get_channel(channel2id)
-        print(todaytimetable)
-        for string in todaytimetable:
-            todaystrings += string
-        await channel.send(todaystrings)
-    await todayprocessing()
+    todaystrings = ''
+    channel = bot.get_channel(channel1id)
+    for thread in channel.threads:
+        print(thread.name)
+        async for message in thread.history():
+            if message.attachments:
+                task = f"{message.content} ((Задание на картинке, переходи в ветку)) (<#{str(thread.id)}>)"
+            else:
+                task = f'{message.content} (<#{str(thread.id)}>)'
+            print(message.content)
+            for i in range(len(methodsettings[0])):
+                if methodsettings[0][i] in message.content:
+                    today[i] = task
+    for i in range(len(methodsettings[0])):
+        if today[i] == "":
+            today[i] = methodsettings[0][i]
+    while "" in today:
+        today.remove("")
+    for i in range(len(today)):
+        today[i] = f"{i+1}. {today[i]} \n"
+    today.insert(0, f"Задание на {methodsettings[1].strftime('%d.%m')}:\n")
+    channel = bot.get_channel(channel2id)
+    print(today)
+    for string in today:
+        todaystrings += string
+    await channel.send(todaystrings)
 
 def startbot(): #тупо старт бота
     global windows
